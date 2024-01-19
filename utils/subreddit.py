@@ -72,7 +72,12 @@ def get_subreddit_undone(
                         f"Post is too long ({len(submission.selftext)}), try with a different post. ({settings.config['settings']['storymode_max_length']} character limit)"
                     )
                     continue
-                elif len(submission.selftext) < 30:
+                elif len(submission.selftext) < (
+                    settings.config["settings"]["storymode_min_length"] or 500
+                ):
+                    print_substep(
+                        f"Post is too short ({len(submission.selftext)}), try with a different post. (minimum {settings.config['settings']['storymode_min_length']} characters)"
+                    )
                     continue
         if settings.config["settings"]["storymode"] and not submission.is_self:
             continue
