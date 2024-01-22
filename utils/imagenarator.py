@@ -54,7 +54,7 @@ def draw_multiple_line_text(
         y += line_height + padding
 
 
-def imagemaker(theme, reddit_obj: dict, txtclr, padding=5, transparent=False) -> None:
+def imagemaker(theme, reddit_obj: dict, txtclr, padding=5, transparent=False, image_size=(1920,1080), font_size=100) -> None:
     """
     Render Images for video
     """
@@ -63,16 +63,15 @@ def imagemaker(theme, reddit_obj: dict, txtclr, padding=5, transparent=False) ->
     id = re.sub(r"[^\w\s-]", "", reddit_obj["thread_id"])
 
     if transparent:
-        font = ImageFont.truetype(os.path.join("fonts", "Roboto-Bold.ttf"), 100)
-        tfont = ImageFont.truetype(os.path.join("fonts", "Roboto-Bold.ttf"), 100)
+        font = ImageFont.truetype(os.path.join("fonts", "Roboto-Bold.ttf"), font_size)
+        tfont = ImageFont.truetype(os.path.join("fonts", "Roboto-Bold.ttf"), font_size)
     else:
         tfont = ImageFont.truetype(
-            os.path.join("fonts", "Roboto-Bold.ttf"), 100
+            os.path.join("fonts", "Roboto-Bold.ttf"), font_size
         )  # for title
-        font = ImageFont.truetype(os.path.join("fonts", "Roboto-Regular.ttf"), 100)
-    size = (1920, 1080)
+        font = ImageFont.truetype(os.path.join("fonts", "Roboto-Regular.ttf"), font_size)
 
-    image = Image.new("RGBA", size, theme)
+    image = Image.new("RGBA", image_size, theme)
 
     # for title
     draw_multiple_line_text(
@@ -82,7 +81,7 @@ def imagemaker(theme, reddit_obj: dict, txtclr, padding=5, transparent=False) ->
     image.save(f"assets/temp/{id}/png/title.png")
 
     for idx, text in track(enumerate(texts), "Rendering Image"):
-        image = Image.new("RGBA", size, theme)
+        image = Image.new("RGBA", image_size, theme)
         text = process_text(text, False)
         draw_multiple_line_text(
             image, text, font, txtclr, padding, wrap=30, transparent=transparent

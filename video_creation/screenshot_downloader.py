@@ -74,6 +74,11 @@ def get_screenshots_of_reddit_posts(reddit_object: dict, screenshot_num: int):
             reddit_obj=reddit_object,
             txtclr=txtcolor,
             transparent=transparent,
+            image_size=(
+                settings.config["settings"]["storymode_text_width"] or 1920,
+                settings.config["settings"]["storymode_text_height"] or 1080
+            ),
+            font_size=settings.config["settings"]["storymode_text_font_size"] or 100
         )
 
     screenshot_num: int
