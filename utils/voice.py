@@ -20,7 +20,8 @@ def check_ratelimit(response: Response) -> bool:
     """
     if response.status_code == 429:
         try:
-            time = int(response.headers["X-RateLimit-Reset"])
+            time = int(response.headers["X-RateLimit-Reset"]) + 1 # the time is rounded down, so we need to add one second to prevent retrying <1 second too early
+            # also, sometimes the server can return 0 second, so we also ensure that we wait at least 1 second instead of repeatedly querying the server
             print(f"Ratelimit hit. Sleeping for {time - int(pytime.time())} seconds.")
             sleep_until(time)
             return False
