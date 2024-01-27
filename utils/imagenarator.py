@@ -1,28 +1,34 @@
 import os
 import re
-import textwrap
+from textwrap import wrap as wrap_text
 
 from PIL import Image, ImageDraw, ImageFont
 from rich.progress import track
 
 from TTS.engine_wrapper import process_text
 
+def getsize(font, text):
+    (left, top, right, bottom) = font.getbbox(text)
+    return right - left, bottom - top
 
 def draw_multiple_line_text(
-    image, text, font, text_color, padding, wrap=50, transparent=False
+    image: Image, text: str, font: ImageFont.FreeTypeFont, text_color: tuple, padding: int, wrap=50, transparent=False
 ) -> None:
     """
     Draw multiline text over given image
     """
     draw = ImageDraw.Draw(image)
-    Fontperm = font.getsize(text)
+    ascent, descent = font.getmetrics()
+    font_height = ascent + descent
     image_width, image_height = image.size
-    lines = textwrap.wrap(text, width=wrap)
-    y = (image_height / 2) - (
-        ((Fontperm[1] + (len(lines) * padding) / len(lines)) * len(lines)) / 2
-    )
+    lines = wrap_text(text, width=wrap)
+    y = round(
+        (image_height / 2) - (
+        ((font_height + round(padding)) * len(lines)) / 2
+    ))
     for line in lines:
-        line_width, line_height = font.getsize(line)
+        line_width, line_height = getsize(font, line)
+        
         if transparent:
             shadowcolor = "black"
             for i in range(1, 5):
@@ -51,10 +57,10 @@ def draw_multiple_line_text(
                     fill=shadowcolor,
                 )
         draw.text(((image_width - line_width) / 2, y), line, font=font, fill=text_color)
-        y += line_height + padding
+        y += font_height + padding
 
 
-def imagemaker(theme, reddit_obj: dict, txtclr, padding=5, transparent=False, image_size=(1920,1080), font_size=100) -> None:
+def imagemaker(theme: tuple, reddit_obj: dict, txtclr: tuple, padding=3, transparent=False, image_size: tuple = (1920,1080), font_size=100) -> None:
     """
     Render Images for video
     """
@@ -63,8 +69,8 @@ def imagemaker(theme, reddit_obj: dict, txtclr, padding=5, transparent=False, im
     id = re.sub(r"[^\w\s-]", "", reddit_obj["thread_id"])
 
     if transparent:
+        tfont = ImageFont.truetype(os.path.join("fonts", "Roboto-Black.ttf"), font_size)
         font = ImageFont.truetype(os.path.join("fonts", "Roboto-Bold.ttf"), font_size)
-        tfont = ImageFont.truetype(os.path.join("fonts", "Roboto-Bold.ttf"), font_size)
     else:
         tfont = ImageFont.truetype(
             os.path.join("fonts", "Roboto-Bold.ttf"), font_size
