@@ -449,6 +449,6 @@ def make_final_video(
     pbar.close()
     save_data(subreddit, filename + ".mp4", title, idx, background_config["video"][2])
     print_step("Removing temporary files 🗑")
-    cleanups = cleanup(reddit_id)
-    print_substep(f"Removed {cleanups} temporary files 🗑")
+    cleaned_up = cleanup(reddit_id) # debug
+    print_substep("Removed temporary files 🗑" if cleaned_up else f"Could not remove temporary files. You can remove them manually (directory assets/temp/{reddit_id})")
     print_step("Done! 🎉 The video is in the results folder 📁")
