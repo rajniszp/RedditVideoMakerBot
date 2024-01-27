@@ -20,6 +20,8 @@ from utils.console import print_step, print_substep
 from utils.thumbnail import create_thumbnail
 from utils.videos import save_data
 
+from sanitize_filename import sanitize as sanitize_filename
+
 console = Console()
 
 
@@ -129,6 +131,18 @@ def merge_background_audio(audio: ffmpeg, reddit_id: str):
         merged_audio = ffmpeg.filter([audio, bg_audio], "amix", duration="longest")
         return merged_audio  # Return merged audio
 
+def append_extension(path: str, filename: str, extension = ".mp4"):
+    if not path.endswith('/'):
+        path = path + '/' # append trailing slash
+    if not extension.startswith('.'):
+        extension = '.' + extension # prepend dot
+    sanitized_filename = sanitize_filename(filename + extension)
+    abs_path_len = len(os.path.abspath(path)) # Get length of an absolute path
+    max_path_len = 255 # limit for ntfs (windows), ext (linux) and most of other file systems
+    if abs_path_len + len(sanitized_filename) > max_path_len: # the resulting file path would be too long 
+        n_of_chars_to_strip = abs_path_len + len(sanitized_filename) - max_path_len # how many characters we need to strip from the filename to fit within the filesystem limit; 
+        return path[:(n_of_chars_to_strip + len(extension))] + extension # strip filename and extension, then reappend extension
+    return path + sanitized_filename # the resulting file path is not to long, everythings ok 
 
 def make_final_video(
     number_of_clips: int,
@@ -384,10 +398,7 @@ def make_final_video(
 
     defaultPath = f"results/{subreddit}"
     with ProgressFfmpeg(length, on_update_example) as progress:
-        path = defaultPath + f"/{filename}"
-        path = (
-            path[:251] + ".mp4"
-        )  # Prevent a error by limiting the path length, do not change this.
+        path = append_extension(defaultPath, filename)  
         try:
             ffmpeg.output(
                 background_clip,
@@ -414,10 +425,7 @@ def make_final_video(
     old_percentage = pbar.n
     pbar.update(100 - old_percentage)
     if allowOnlyTTSFolder:
-        path = defaultPath + f"/OnlyTTS/{filename}"
-        path = (
-            path[:251] + ".mp4"
-        )  # Prevent a error by limiting the path length, do not change this.
+        path = append_extension(defaultPath + f"/OnlyTTS", filename)
         print_step("Rendering the Only TTS Video 🎥")
         with ProgressFfmpeg(length, on_update_example) as progress:
             try:
