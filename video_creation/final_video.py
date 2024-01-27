@@ -20,6 +20,7 @@ from utils.console import print_step, print_substep
 from utils.thumbnail import create_thumbnail
 from utils.videos import save_data
 
+from shutil import copyfile
 from sanitize_filename import sanitize as sanitize_filename
 
 console = Console()
@@ -336,13 +337,16 @@ def make_final_video(
 
     # create a thumbnail for the video
     settingsbackground = settings.config["settings"]["background"]
+    thumbnail_filename = None
+    thumbnail_results_path = None
 
     if settingsbackground["background_thumbnail"]:
-        if not exists(f"./results/{subreddit}/thumbnails"):
+        thumbnail_results_path = f"./results/{subreddit}/thumbnails"
+        if not exists(thumbnail_results_path):
             print_substep(
-                "The 'results/thumbnails' folder could not be found so it was automatically created."
+                f"The '{thumbnail_results_path}' folder could not be found so it was automatically created."
             )
-            os.makedirs(f"./results/{subreddit}/thumbnails")
+            os.makedirs(thumbnail_results_path)
         # get the first file with the .png extension from assets/backgrounds and use it as a background for the thumbnail
         first_image = next(
             (
@@ -370,7 +374,8 @@ def make_final_video(
                 height,
                 title_thumb,
             )
-            thumbnailSave.save(f"./assets/temp/{reddit_id}/thumbnail.png")
+            thumbnail_filename = f"./assets/temp/{reddit_id}/thumbnail.png"
+            thumbnailSave.save(thumbnail_filename)
             print_substep(
                 f"Thumbnail - Building Thumbnail in assets/temp/{reddit_id}/thumbnail.png"
             )
@@ -456,7 +461,11 @@ def make_final_video(
         pbar.update(100 - old_percentage)
     pbar.close()
     save_data(subreddit, filename + ".mp4", title, idx, background_config["video"][2])
+    if thumbnail_filename and thumbnail_results_path:
+        thumbnail_results_filename = thumbnail_results_path + ('' if thumbnail_results_path.endswith('/') else '/') + filename + ".png"
+        copyfile(thumbnail_filename, thumbnail_results_filename)
+        print_substep(f"Thumbnail copied to '{thumbnail_results_filename}'")
     print_step("Removing temporary files 🗑")
     cleaned_up = cleanup(reddit_id) # debug
     print_substep("Removed temporary files 🗑" if cleaned_up else f"Could not remove temporary files. You can remove them manually (directory assets/temp/{reddit_id})")
-    print_step("Done! 🎉 The video is in the results folder 📁")
+    print_step(f"Done! 🎉 The video is in the results folder 📁: \"{path}\"")
