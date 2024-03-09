@@ -16,11 +16,11 @@ from utils.console import print_step, print_substep
 def load_background_options():
     background_options = {}
     # Load background videos
-    with open("./utils/background_videos.json") as json_file:
+    with open("./utils/background_videos.json", encoding="utf-8") as json_file:
         background_options["video"] = json.load(json_file)
 
     # Load background audios
-    with open("./utils/background_audios.json") as json_file:
+    with open("./utils/background_audios.json", encoding="utf-8") as json_file:
         background_options["audio"] = json.load(json_file)
 
     # Remove "__comment" from backgrounds

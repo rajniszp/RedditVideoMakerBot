@@ -148,7 +148,7 @@ Overwrite it?(y/n)"""
             return False
         else:
             try:
-                with open(config_file, "w") as f:
+                with open(config_file, "w", encoding="utf-8") as f:
                     f.write("")
             except:
                 console.print(
@@ -161,7 +161,7 @@ Overwrite it?(y/n)"""
 Creating it now."""
         )
         try:
-            with open(config_file, "x") as f:
+            with open(config_file, "x",encoding="utf-8") as f:
                 f.write("")
             config = {}
         except:
@@ -181,7 +181,7 @@ If you see any prompts, that means that you have unset/incorrectly set variables
 """
     )
     crawl(template, check_vars)
-    with open(config_file, "w") as f:
+    with open(config_file, "w", encoding="utf-8") as f:
         toml.dump(config, f)
     return config
 

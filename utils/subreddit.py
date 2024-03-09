@@ -29,7 +29,7 @@ def get_subreddit_undone(
 
     # recursively checks if the top submission in the list was already done.
     if not exists("./video_creation/data/videos.json"):
-        with open("./video_creation/data/videos.json", "w+") as f:
+        with open("./video_creation/data/videos.json", "w+", encoding="utf-8") as f:
             json.dump([], f)
     with open(
         "./video_creation/data/videos.json", "r", encoding="utf-8"
