@@ -50,7 +50,7 @@ class StreamlabsPolly:
         if not check_ratelimit(response):
             self.run(text, filepath, random_voice)
 
-        else:
+        elif response.ok: # status code < 400
             try:
                 voice_data = requests.get(response.json()["speak_url"])
                 with open(filepath, "wb") as f:
@@ -61,6 +61,13 @@ class StreamlabsPolly:
                         raise ValueError("Please specify a text to convert to speech.")
                 except (KeyError, JSONDecodeError):
                     print("Error occurred calling Streamlabs Polly")
+                    raise # rethrow error as we have not received the speech data and thus we did not create an audio file
+
+        else: # response not ok, status code > 400
+            print("Error occurred calling Streamlabs Polly")
+            print(f"Http status code: {response.status_code}")
+            print(f"Error: '{response.text}'") # we do not know if we receive a json, html, plain text, etc. so we just display it as it is
+            raise Exception("Error occurred calling Streamlabs Polly. Read error above")
 
     def randomvoice(self):
         return random.choice(self.voices)
