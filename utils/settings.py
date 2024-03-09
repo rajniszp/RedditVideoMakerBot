@@ -1,4 +1,5 @@
 import re
+import sys
 from pathlib import Path
 from typing import Tuple, Dict
 
@@ -187,4 +188,5 @@ If you see any prompts, that means that you have unset/incorrectly set variables
 
 if __name__ == "__main__":
     directory = Path().absolute()
-    check_toml(f"{directory}/utils/.config.template.toml", "config.toml")
+    configFileName = sys.argv[1] if len(sys.argv) > 1 else "config.toml"
+    check_toml(f"{directory}/utils/.config.template.toml", configFileName)

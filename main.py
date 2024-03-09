@@ -88,8 +88,11 @@ if __name__ == "__main__":
         sys.exit()
     ffmpeg_install()
     directory = Path().absolute()
+    configFileName = sys.argv[1] if len(sys.argv) > 1 else "config.toml"
+    if configFileName.startswith("./"):
+        configFileName = configFileName[2:]
     config = settings.check_toml(
-        f"{directory}/utils/.config.template.toml", f"{directory}/config.toml"
+        f"{directory}/utils/.config.template.toml", f"{directory}/{configFileName}"
     )
     config is False and sys.exit()
 
