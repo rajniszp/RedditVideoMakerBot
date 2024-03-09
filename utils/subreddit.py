@@ -81,6 +81,8 @@ def get_subreddit_undone(
                     continue
         if settings.config["settings"]["storymode"] and not submission.is_self:
             continue
+        if submission.selftext in ["[removed]", "[deleted]"]:
+            continue 
         if similarity_scores is not None:
             return submission, similarity_scores[i].item()
         return submission
