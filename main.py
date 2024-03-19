@@ -96,10 +96,10 @@ if __name__ == "__main__":
     )
     config is False and sys.exit()
 
-    if (
+    if config["settings"]["tts"]["voice_choice"] == "tiktok" and (
         not settings.config["settings"]["tts"]["tiktok_sessionid"]
         or settings.config["settings"]["tts"]["tiktok_sessionid"] == ""
-    ) and config["settings"]["tts"]["voice_choice"] == "tiktok":
+    ):
         print_substep(
             "TikTok voice requires a sessionid! Check our documentation on how to obtain one.",
             "bold red",
@@ -107,12 +107,11 @@ if __name__ == "__main__":
         sys.exit()
     try:
         if config["reddit"]["thread"]["post_id"]:
-            for index, post_id in enumerate(
-                config["reddit"]["thread"]["post_id"].split("+")
-            ):
+            post_ids = config["reddit"]["thread"]["post_id"].split("+")
+            for index, post_id in enumerate(post_ids):
                 index += 1
                 print_step(
-                    f'on the {index}{("st" if index % 10 == 1 else ("nd" if index % 10 == 2 else ("rd" if index % 10 == 3 else "th")))} post of {len(config["reddit"]["thread"]["post_id"].split("+"))}'
+                    f'on the {index}{("", "st", "nd", "rd", "th")[max(index, 4)]} post of {len(post_ids)}'
                 )
                 main(post_id)
                 Popen("cls" if name == "nt" else "clear", shell=True).wait()
