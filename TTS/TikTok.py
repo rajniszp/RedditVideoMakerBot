@@ -34,7 +34,6 @@ eng_voices: Final[tuple] = (
     "en_us_009",  # English US - Male 3
     "en_us_010",  # English US - Male 4
     "en_male_narration",  # Narrator
-    "en_male_funny",  # Funny
     "en_female_emotional",  # Peaceful
     "en_male_cody",  # Serious
 )
@@ -87,9 +86,9 @@ class TikTok:
         }
 
         self.URI_BASE = (
-            "https://api16-normal-c-useast1a.tiktokv.com/media/api/text/speech/invoke/"
+            "https://tiktok-tts.weilnet.workers.dev/api/generation" #old uri: "https://api16-normal-c-useast1a.tiktokv.com/media/api/text/speech/invoke/"
         )
-        self.max_chars = 200
+        self.max_chars = 160
 
         self._session = requests.Session()
         # set the headers to the session, so we don't have to do it for every request
@@ -104,19 +103,20 @@ class TikTok:
 
         # get the audio from the TikTok API
         data = self.get_voices(voice=voice, text=text)
-
         # check if there was an error in the request
-        status_code = data["status_code"]
-        if status_code != 0:
-            raise TikTokTTSException(status_code, data["message"])
+        err = data["error"]
+        if err:
+            print(f"Something went wrong with TikTok TTS. Text send to TTS service was '{text}'")
+            raise TikTokTTSException(0, err)
 
         # decode data from base64 to binary
         try:
-            raw_voices = data["data"]["v_str"]
+            raw_voices = data["data"]
         except:
             print(
                 "The TikTok TTS returned an invalid response. Please try again later, and report this bug."
             )
+            print(f"Text send to TTS service was '{text}'")
             raise TikTokTTSException(0, "Invalid response")
         decoded_voices = base64.b64decode(raw_voices)
 
@@ -130,17 +130,14 @@ class TikTok:
         text = text.replace("+", "plus").replace("&", "and").replace("r/", "")
 
         # prepare url request
-        params = {"req_text": text, "speaker_map_type": 0, "aid": 1233}
-
-        if voice is not None:
-            params["text_speaker"] = voice
+        params = {"text": text, "voice": voice}
 
         # send request
         try:
-            response = self._session.post(self.URI_BASE, params=params)
+            response = self._session.post(self.URI_BASE, json=params)
         except ConnectionError:
             time.sleep(random.randrange(1, 7))
-            response = self._session.post(self.URI_BASE, params=params)
+            response = self._session.post(self.URI_BASE, json=params)
 
         return response.json()
 
@@ -150,18 +147,10 @@ class TikTok:
 
 
 class TikTokTTSException(Exception):
-    def __init__(self, code: int, message: str):
-        self._code = code
-        self._message = message
+    def __init__(self, status_code, message):
+        self.status_code = status_code
+        self.message = message
+        super().__init__(self.message)
 
-    def __str__(self) -> str:
-        if self._code == 1:
-            return f"Code: {self._code}, reason: probably the aid value isn't correct, message: {self._message}"
-
-        if self._code == 2:
-            return f"Code: {self._code}, reason: the text is too long, message: {self._message}"
-
-        if self._code == 4:
-            return f"Code: {self._code}, reason: the speaker doesn't exist, message: {self._message}"
-
-        return f"Code: {self._message}, reason: unknown, message: {self._message}"
+    def __str__(self):
+        return f"Code: {self.status_code}, message: {self.message}"
